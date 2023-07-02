@@ -1,4 +1,5 @@
 import * as parser from "../web/mpegtspacketParser.js";
+import * as log from "../utils/logger.js"
 
 import { emptyStream } from './testData/emptyStream.json'
 import { incompletePIDBytes } from './testData/incompletePIDBytes.json'
@@ -9,6 +10,7 @@ import { validPacket } from './testData/validPacket.json'
 describe('mpegTS Packet Parser', () => {
     const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
     const mpegtsPacketParser = jest.spyOn(parser, 'mpegtsPacketParser')
+    const logger = jest.spyOn(log, 'logger')
     
     afterEach(() => {
         jest.clearAllMocks()
@@ -19,7 +21,8 @@ describe('mpegTS Packet Parser', () => {
         Then the parser should successfully process the packet
     `, () => {
         let seq = 0
-        mpegtsPacketParser(validPacket, validPacket.length, seq)
+        let streamOffset = 0
+        mpegtsPacketParser(validPacket, streamOffset, seq)
         expect(mockExit).not.toHaveBeenCalled()
     })
     test(`
@@ -28,7 +31,8 @@ describe('mpegTS Packet Parser', () => {
         Then the parser should return null
     `, () => {
         let seq = 0
-        const parsed = mpegtsPacketParser(validIncompletePacket, validIncompletePacket.length, seq)
+        let streamOffset = 0
+        const parsed = mpegtsPacketParser(validIncompletePacket, streamOffset, seq)
         expect(parsed).toBeNull()
     })
     test(`
@@ -37,9 +41,10 @@ describe('mpegTS Packet Parser', () => {
         Then the process should exit with an error
     `, () => {
         let seq = 1
-        let streamOffset = 376
+        let streamOffset = 188
         mpegtsPacketParser(missingSyncByte, streamOffset, seq)
         expect(mockExit).toHaveBeenCalled()
+        expect(logger).toHaveBeenCalledWith(`Error: No Sync Byte present in Packet ${seq} at offset ${streamOffset}.`)
     })
     test(`
         Given an incoming MPEGTS packet
@@ -57,8 +62,10 @@ describe('mpegTS Packet Parser', () => {
         Then exit the process with an error
     `, () => {
         let seq = 0
-        mpegtsPacketParser(incompletePIDBytes, incompletePIDBytes.length, seq)
+        let streamOffset = 0
+        mpegtsPacketParser(incompletePIDBytes, streamOffset, seq)
         expect(mockExit).toHaveBeenCalled()
+        expect(logger).toHaveBeenCalledWith(`Error: Incomplete PID in Packet ${seq} at offset ${streamOffset}`)
     })
     test(`
         Given an incoming MPEGTS stream
@@ -66,7 +73,8 @@ describe('mpegTS Packet Parser', () => {
         Then the parser will not be invoked, or return null
     `, () => {
         let seq = 0
-        const parsed = mpegtsPacketParser(emptyStream, emptyStream.length, seq)
+        let streamOffset = 0
+        const parsed = mpegtsPacketParser(emptyStream, streamOffset, seq)
         expect(parsed).toBeNull()
     })
 })
