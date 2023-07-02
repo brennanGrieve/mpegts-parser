@@ -6,6 +6,7 @@
 
 import { createReadStream } from 'fs'
 import { mpegtsPacketParser } from './mpegtspacketParser.js'
+import { logger } from '../utils/logger.js'
 
 const webLayerSimulator = (fileName) => {
   const pidList = new Set()
@@ -15,7 +16,7 @@ const webLayerSimulator = (fileName) => {
   try{
     var inputStream = createReadStream(fileName, { highWaterMark: 188 })
     inputStream.on('error', ({message}) => {
-      console.log(message)
+      logger(message)
       process.exit(1)
     })
 
@@ -30,12 +31,12 @@ const webLayerSimulator = (fileName) => {
     })
 
     inputStream.on('end', () => {
-      Array.from(pidList).sort().map((elem) => console.log(`0x${elem.toString(16)}`))
+      Array.from(pidList).sort().map((elem) => logger(`0x${elem.toString(16)}`))
       inputStream.removeAllListeners()
       process.exit(0)
     })
   } catch (ex) {
-    console.log(ex)
+    logger(ex)
   }
 }
 

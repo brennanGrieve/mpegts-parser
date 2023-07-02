@@ -1,11 +1,13 @@
+import { logger } from '../utils/logger.js'
+
 export const mpegtsPacketParser = (packet, streamOffset, seq) => {
     if(packet.length === 0) return null
     if(packet[0] !== 0x47 && seq > 0) { 
-      console.log(`Error: No Sync Byte present in Packet ${seq} at offset ${streamOffset}.`) 
+      logger(`Error: No Sync Byte present in Packet ${seq} at offset ${streamOffset}.`) 
       process.exit(1)
     }
     if(packet[1] === undefined || packet[2] === undefined) {
-        console.log(`Error: Incomplete PID in Packet ${seq} at offset ${streamOffset}`)
+        logger(`Error: Incomplete PID in Packet ${seq} at offset ${streamOffset}`)
         process.exit(1)
     }
     if(packet.length < 188 && seq === 0) return null
