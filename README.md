@@ -9,4 +9,4 @@ To run:
 2. Run `nvm install latest` to install the latest version of nodeJS.
 3. Run `nvm use latest` to set up node for use.
 4. Using a command line, run `npm install` in the project root to install all dependencies.
-5. Run `npm parse-success` to run the parser with the valid test file, `npm parse-failure` to run the parser with the invalid test file, or `npm test` to run the suite of Jest tests.
+5. Run `npm run parse-success` to run the parser with the valid test file, `npm run parse-failure` to run the parser with the invalid test file, or `npm test` to run the suite of Jest tests.

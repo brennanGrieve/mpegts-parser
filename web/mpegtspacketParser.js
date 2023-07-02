@@ -1,6 +1,16 @@
 export const mpegtsPacketParser = (packet, streamOffset, seq) => {
-  console.log(packet)
-  console.log(streamOffset)
-  console.log(seq)
-}
+    if(packet.length === 0) return null
+    if(packet[0] !== 0x47 && seq > 0) { 
+      console.log(`Error: No Sync Byte present in Packet ${seq} at offset ${streamOffset}.`) 
+      process.exit(1)
+    }
+    if(packet[1] === undefined || packet[2] === undefined) {
+        console.log(`Error: Incomplete PID in Packet ${seq} at offset ${streamOffset}`)
+        process.exit(1)
+    }
+    if(packet.length < 188 && seq === 0) return null
+    const lsb5 = packet[1] & parseInt('00011111', 2)
+    const pid = parseInt(lsb5.toString(2) + packet[2].toString(2).padStart(8, '0'), 2)
+    return { pid, payload: packet }
+  }
   
