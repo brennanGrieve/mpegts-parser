@@ -8,6 +8,10 @@ import { createReadStream } from 'fs'
 import { mpegtsPacketParser } from './mpegtspacketParser.js'
 
 const webLayerSimulator = (fileName) => {
+  const pidList = new Set()
+  let seq  = 0
+  let offset = 0
+  const fileData = ""
   try{
     var inputStream = createReadStream(fileName, { highWaterMark: 188 })
     inputStream.on('error', ({message}) => {
@@ -16,10 +20,17 @@ const webLayerSimulator = (fileName) => {
     })
 
     inputStream.on('data', (packet) => {
-      mpegtsPacketParser(packet, offset, seq)
+      const parsed = mpegtsPacketParser(packet, offset, seq)
+      if(parsed) {
+        fileData.concat(parsed.payload)
+        pidList.add(parsed.pid) 
+        offset += packet.length
+        ++seq 
+      }
     })
 
     inputStream.on('end', () => {
+      Array.from(pidList).sort().map((elem) => console.log(`0x${elem.toString(16)}`))
       inputStream.removeAllListeners()
       process.exit(0)
     })
